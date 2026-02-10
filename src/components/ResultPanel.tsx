@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+﻿import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSimStore } from "@/store/useSimStore";
 
 const ResultLine = ({ label, value }: { label: string; value: string }) => (

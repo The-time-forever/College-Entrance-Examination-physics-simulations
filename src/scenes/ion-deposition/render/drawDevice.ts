@@ -1,4 +1,4 @@
-import type { SimParams } from "@/store/useSimStore";
+﻿import type { SimParams } from "@/store/useSimStore";
 
 export type DrawContext = {
   ctx: CanvasRenderingContext2D;
@@ -39,8 +39,8 @@ export const drawDevice = ({ ctx, width, height, scale }: DrawContext, params: S
   ctx.fillRect(noFieldEnd, 30, magneticEnd - noFieldEnd, height - 60);
 
   ctx.fillStyle = "#334155";
-  ctx.fillText("无磁区", noFieldStart + 8, 44);
-  ctx.fillText("磁区", noFieldEnd + 8, 44);
+  ctx.fillText("无场区", noFieldStart + 8, 44);
+  ctx.fillText("磁场区", noFieldEnd + 8, 44);
 
   const plateX = magneticEnd + 1.2 * L;
   const plateHalfHeight = 0.35 * L;

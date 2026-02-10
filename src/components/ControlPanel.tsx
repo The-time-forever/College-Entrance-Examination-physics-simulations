@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+﻿import { useMemo } from "react";
 import { Download } from "lucide-react";
 import { useSimStore } from "@/store/useSimStore";
 import { Button } from "@/components/ui/button";
