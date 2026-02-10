@@ -7,64 +7,91 @@ export type DrawContext = {
   scale: number;
 };
 
-const toCanvasY = (height: number, y: number) => height / 2 - y;
+export type WorldMapper = {
+  originX: number;
+  originY: number;
+  toCanvasX: (x: number) => number;
+  toCanvasY: (y: number) => number;
+};
 
-export const drawDevice = ({ ctx, width, height, scale }: DrawContext, params: SimParams) => {
-  const L = params.L * scale;
+export const createWorldMapper = (height: number, scale: number): WorldMapper => {
+  const originX = 60;
+  const originY = height / 2;
+
+  return {
+    originX,
+    originY,
+    toCanvasX: (x) => originX + x * scale,
+    toCanvasY: (y) => originY - y * scale
+  };
+};
+
+export const drawDevice = ({ ctx, width, height, scale }: DrawContext, params: SimParams): WorldMapper => {
+  const mapper = createWorldMapper(height, scale);
+  const L = params.L;
+  const H = Math.max(Math.abs(params.H), 1e-6);
+
+  const xStart = mapper.toCanvasX(0);
+  const xEnd = width - 20;
+  const y0 = mapper.toCanvasY(0);
+  const yH = mapper.toCanvasY(-H);
 
   ctx.clearRect(0, 0, width, height);
   ctx.fillStyle = "#f8fafc";
   ctx.fillRect(0, 0, width, height);
 
+  ctx.fillStyle = "rgba(59,130,246,0.08)";
+  ctx.fillRect(xStart, 20, xEnd - xStart, Math.max(0, y0 - 20));
+  ctx.fillRect(xStart, yH, xEnd - xStart, Math.max(0, height - 20 - yH));
+
+  ctx.fillStyle = "rgba(148,163,184,0.16)";
+  ctx.fillRect(xStart, y0, xEnd - xStart, yH - y0);
+
   ctx.strokeStyle = "#94a3b8";
   ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.moveTo(20, height / 2);
-  ctx.lineTo(width - 20, height / 2);
-  ctx.moveTo(40, 20);
-  ctx.lineTo(40, height - 20);
+  ctx.moveTo(20, y0);
+  ctx.lineTo(width - 20, y0);
+  ctx.moveTo(mapper.originX, 20);
+  ctx.lineTo(mapper.originX, height - 20);
   ctx.stroke();
 
   ctx.fillStyle = "#0f172a";
   ctx.font = "12px sans-serif";
-  ctx.fillText("O", 28, height / 2 - 6);
-
-  const noFieldStart = 60;
-  const noFieldEnd = noFieldStart + 2.5 * L;
-  const magneticEnd = noFieldEnd + 3 * L;
-
-  ctx.fillStyle = "rgba(148,163,184,0.15)";
-  ctx.fillRect(noFieldStart, 30, noFieldEnd - noFieldStart, height - 60);
-  ctx.fillStyle = "rgba(59,130,246,0.12)";
-  ctx.fillRect(noFieldEnd, 30, magneticEnd - noFieldEnd, height - 60);
+  ctx.fillText("O", mapper.originX - 12, y0 - 6);
 
   ctx.fillStyle = "#334155";
-  ctx.fillText("无场区", noFieldStart + 8, 44);
-  ctx.fillText("磁场区", noFieldEnd + 8, 44);
+  ctx.fillText("磁场区", mapper.toCanvasX(0.35 * L), 40);
+  ctx.fillText("无磁区", mapper.toCanvasX(0.35 * L), y0 + 16);
+  ctx.fillText("磁场区", mapper.toCanvasX(0.35 * L), Math.min(height - 30, yH + 22));
 
-  const plateX = magneticEnd + 1.2 * L;
-  const plateHalfHeight = 0.35 * L;
+  const pX0 = mapper.toCanvasX(L);
+  const pX1 = mapper.toCanvasX(2 * L);
   ctx.strokeStyle = "#1d4ed8";
   ctx.lineWidth = 4;
   ctx.beginPath();
-  ctx.moveTo(plateX, toCanvasY(height, plateHalfHeight));
-  ctx.lineTo(plateX, toCanvasY(height, -plateHalfHeight));
+  ctx.moveTo(pX0, y0);
+  ctx.lineTo(pX1, y0);
+  ctx.moveTo(pX0, yH);
+  ctx.lineTo(pX1, yH);
   ctx.stroke();
-  ctx.fillText("P", plateX + 8, toCanvasY(height, plateHalfHeight) - 4);
+  ctx.fillText("P 上表面", pX0, y0 - 8);
+  ctx.fillText("P 下表面", pX0, yH + 16);
 
-  const gateTop = 0.75 * L;
-  const gateBottom = -0.75 * L;
+  const gateX0 = mapper.toCanvasX(2.5 * L);
+  const gateX1 = mapper.toCanvasX(3.5 * L);
   ctx.strokeStyle = "#475569";
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 3;
   ctx.beginPath();
-  ctx.moveTo(noFieldStart + 0.6 * L, toCanvasY(height, gateTop));
-  ctx.lineTo(noFieldStart + 1.9 * L, toCanvasY(height, gateTop));
-  ctx.moveTo(noFieldStart + 0.6 * L, toCanvasY(height, gateBottom));
-  ctx.lineTo(noFieldStart + 1.9 * L, toCanvasY(height, gateBottom));
+  ctx.moveTo(gateX0, y0);
+  ctx.lineTo(gateX1, y0);
+  ctx.moveTo(gateX0, yH);
+  ctx.lineTo(gateX1, yH);
   ctx.stroke();
 
-  ctx.fillText("M", noFieldStart + 0.55 * L, toCanvasY(height, gateTop) - 8);
-  ctx.fillText("N", noFieldStart + 0.55 * L, toCanvasY(height, gateBottom) + 16);
-  ctx.fillText("Q", noFieldEnd - 10, height / 2 - 8);
-  ctx.fillText("S", magneticEnd - 10, height / 2 - 8);
+  ctx.fillText("M", gateX0 - 14, y0 - 8);
+  ctx.fillText("N", gateX0 - 14, yH + 16);
+  ctx.fillText("S", mapper.toCanvasX(3 * L) - 3, y0 - 8);
+
+  return mapper;
 };

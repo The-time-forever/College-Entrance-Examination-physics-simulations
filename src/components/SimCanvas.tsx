@@ -39,9 +39,9 @@ export const SimCanvas = () => {
       const height = bounds.height;
       const scale = Math.max(40, Math.min(width, height) / 12);
 
-      drawDevice({ ctx, width, height, scale }, params);
-      drawTrajectory(ctx, height, scale, computed.a, "#2563eb", "a");
-      drawTrajectory(ctx, height, scale, computed.b, "#ef4444", "b");
+      const mapper = drawDevice({ ctx, width, height, scale }, params);
+      drawTrajectory(ctx, computed.a, "#2563eb", "a", mapper);
+      drawTrajectory(ctx, computed.b, "#ef4444", "b", mapper);
     };
 
     resizeAndRender();
